@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Count</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        pre {
+            white-space: pre-wrap;
+        }
+        #progress {
+            width: 100%;
+            background-color: #ddd;
+            margin-bottom: 10px;
+        }
+        #bar {
+            width: 0%;
+            height: 30px;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Count</h1>
+        <form id="upload-form" method="post" enctype="multipart/form-data" onsubmit="uploadFile()">
+            {% csrf_token %}
+            <input type="file" name="uploaded_file" id="uploaded_file">
+            <br>
+            <button type="submit" name="action" value="upload">File Upload and View</button>
+        </form>
+        <div id="progress">
+            <div id="bar">0%</div>
+        </div>
+        {% if upload_message %}
+            <p>{{ upload_message }}</p>
+        {% endif %}
+        {% if file_name %}
+            <div class="result">
+                <h2 style="margin-bottom: 10px;">Name of Uploaded File</h2>
+                <p>{{ file_name }}</p>
+                {% if top_words %}
+                    <h2>Top 10 Most Common Words</h2>
+                    <ul>
+                        {% for word, count in top_words %}
+                            <li>{{ word }}: {{ count }}</li>
+                        {% endfor %}
+                    </ul>
+                    <script>
+                        // Set progress bar to 100% when file processing is done
+                        document.getElementById("bar").style.width = "100%";
+                        document.getElementById("bar").innerHTML = "100%";
+                    </script>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    <script>
+        function uploadFile() {
+            var fileInput = document.getElementById("uploaded_file");
+            var file = fileInput.files[0];
+            var formData = new FormData();
+            formData.append("uploaded_file", file);
+
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(event) {
+                if (event.lengthComputable) {
+                    var percent = (event.loaded / event.total) * 100;
+                    var bar = document.getElementById("bar");
+                    bar.style.width = percent + "%";
+                    bar.innerHTML = Math.round(percent) + "%";
+                }
+            });
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Refresh page to show processed data
+                    location.reload();
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+
+            xhr.open("POST", "", true);
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>
