@@ -1,0 +1,15 @@
+version: "3.6"
+
+services:
+  pyspark:
+    image: jupyter/pyspark-notebook
+    container_name: pyspark
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - GRANT_SUDO=yes
+    user: root
+    command: start-notebook.sh --NotebookApp.token=''
